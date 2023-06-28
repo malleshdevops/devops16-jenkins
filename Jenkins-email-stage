@@ -1,0 +1,59 @@
+pipeline{
+  agent any;
+  options { 
+    buildDiscarder(logRotator(numToKeepStr: '10'))
+    timestamps()
+   }
+  tools {
+        maven 'maven16' 
+    }
+    triggers {
+      pollSCM('* * * * 1-5')
+    }
+  stages{
+  stage('clean'){
+      steps{
+          cleanWs()
+      }
+       post{
+	    failure{
+	        emailext attachLog: true, body: '''Hi,
+
+This is notification for jenkins job status.''', compressLog: true, subject: 'devops16: jenkins status notification', to: 'malleshdevops2021@outlook.com'
+	    }
+	}
+  }
+  stage('clone repo') {
+    steps{
+      checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'nexus-jenkins-id', url: 'https://github.com/malleshdevops/devops-us-maven.git']])
+    }
+     post{
+	    failure{
+	        emailext attachLog: true, body: '''Hi,
+
+This is notification for jenkins job status.''', compressLog: true, subject: 'devops16: jenkins status notification', to: 'malleshdevops2021@outlook.com'
+	    }
+	}
+  }
+	stage('build'){
+      
+	  steps{
+	   sh 'mvnxx clean package'
+	  }
+	   post{
+	    failure{
+	        emailext attachLog: true, body: '''Hi,
+
+This is notification for jenkins job status.''', compressLog: true, subject: 'devops16: jenkins status notification', to: 'malleshdevops2021@outlook.com'
+	    }
+	}
+    }
+	}
+	post{
+	    failure{
+	        emailext attachLog: true, body: '''Hi,
+
+This is notification for jenkins job status.''', compressLog: true, subject: 'devops16: jenkins status notification', to: 'malleshdevops2021@outlook.com'
+	    }
+	}
+}
